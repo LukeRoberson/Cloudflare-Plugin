@@ -16,10 +16,10 @@ A plugin to manage alerts (webhooks) from the Cloudflare platform.
 
 ## YAML Files
 
-| File        | Provided Function                           |
-| ----------- | ------------------------------------------- |
-| config.yaml | Configuration for the plugin                |
-| events.yaml | Rules to create and forma alerts from event |
+| File        | Provided Function                            |
+| ----------- | -------------------------------------------- |
+| config.yaml | Configuration for the plugin                 |
+| events.yaml | Rules to create and format alerts from event |
 </br></br>
 
 
