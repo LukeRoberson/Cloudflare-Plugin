@@ -1,0 +1,67 @@
+# Definitions to parse alarm events from CloudFlare webhooks
+#
+# Definitions below contain:
+# - description: A short description of the event. This is used for documentation purposes.
+# - message: A message template that will be used to format the event message.
+# - teams: Optional message template for Microsoft Teams notifications. If not provided, the other message will be used.
+
+
+incident_alert:
+  description: "Cloudflare Status: Incident Alert. Cloudflare is experiencing an incident."
+  message: "Cloudflare is experiencing an incident: {self.incident_name}\n{self.message}"
+
+maintenance_event_notification:
+  description: "Cloudflare Status: Maintenance Notification. A maintenance on a point of presence has been scheduled, changed, or canceled."
+  message: "Cloudflare maintenance event: {self.maintenance_id}.\nStarting at: {self.scheduled_start}, ending at: {self.scheduled_end}"
+
+closed_port_scan_alert:
+  description: "Cloudforce One: Cloudflare Closed Port Scan Alert. Get notifications when Cloudflare detects newly closed ports"
+  message: "Cloudflare has detected that ports {self.ports[0][number]} on {self.ports[0][ip]} have been closed"
+
+open_port_scan_alert:
+  description: "Cloudforce One: Cloudflare Open Port Scan Alert. Get notifications when Cloudflare detects newly open ports"
+  message: "Cloudflare has detected that ports {self.ports[0][number]} on {self.ports[0][ip]} have been opened"
+
+dos_attack_l7:
+  description: "DDoS Protection: HHTP DDoS Attack Alert. Cloudflare detects and mitigates an HTTP DDoS attack against one of your domains"
+  message: "DDoS attack has been detected on {self.target_hostname}.\nSee more here: {self.dashboard_link}"
+
+health_check_status_notification:
+  description: "Health Checks: Health Checks Status Notification. Notifications generated on health check status changes"
+  message: "Cloudflare service {self.name} has changed status to {self.status}. Reason: {self.reason}"
+
+load_balancing_health_alert:
+  description: "Load Balancing: Load Balancing Health Alert. Load Balancing Health Alerts for Pools and Origins"
+  message: "Cloudflare load balancing alert for {self.load_balancers} in the {self.pool_name} pool.\nStatus: {self.status}"
+
+load_balancing_pool_enablement_alert:
+  description: "Load Balancing: Pool Enablement. Pool alerts based on enable/disable toggle status"
+  message: "Cloudflare pool enablement for pool {self.pool_name}.\nAccount name: {self.auth_info[account_name]}"
+
+radar_notification:
+  description: "Radar: Radar. Receive notifications for Internet outages and BGP leaks/hijacks by country or Autonomous System."
+  message: "{self.event_title}"
+
+bgp_hijack_notification:
+  description: "Route Leak Detection: Route Leak Detection Alert. Alerts for BGP Hijack"
+  message: "{self.alert_title}: {self.additional_info}"
+
+dedicated_ssl_certificate_event_type:
+  description: "SSL/TLS: Advanced Certificate Alert. Dedicated Certificate validation status, issuance, renewal, and expiration notices"
+  message: "Cloudflare certificate issue: {self.data}"
+
+universal_ssl_event_type:
+  description: "SSL/TLS: Universal SSL Alert. Universal Certificate validation status, issuance, renewal, and expiration notices"
+  message: "Cloudflare certificate issue: {self.data}"
+
+security_insights_alert:
+  description: "Security Insights: New Insight Detected. A new Insight for your choice of insight_class was detected."
+  message: "Cloudflare security insight alert for {self.account_name}: {self.subject}"
+
+real_origin_monitoring:
+  description: "Traffic Monitoring: Passive Origin Monitoring. Cloudflare is unable to reach your origin"
+  message: "Cloudflare {self.unreachable_zones} is unreachable"
+
+clickhouse_alert_fw_anomaly:
+  description: "WAF: Security Events Alert. Spike in all security events. Sent within 5 minutes of the spike in events being detected."
+  message: "WAF anomaly detected in the {self.zone_name} zone.\nSee more: {self.dashboard_link}"

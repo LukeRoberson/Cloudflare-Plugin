@@ -33,6 +33,8 @@ Dependencies:
 
 Custom dependencies:
     - event_handler: Custom module to handle webhook events from Cloudflare.
+    - systemlog: Custom module to manage system logs and send them
+        to the logging service.
 """
 
 # Standard library imports
@@ -50,6 +52,7 @@ import os
 
 # Custom module imports
 from event_handler import EventHandler
+from systemlog import SystemLog
 
 
 CONFIG_URL = "http://core:5100/api/config"
@@ -120,6 +123,7 @@ def logging_setup(
 
 def create_app(
     config: dict,
+    system_log: SystemLog,
 ) -> Flask:
     """
     Create the Flask application instance and set up the configuration.
@@ -127,6 +131,7 @@ def create_app(
 
     Args:
         config (dict): The global configuration dictionary
+        system_log (SystemLog): An instance of SystemLog for logging.
 
     Returns:
         Flask: The Flask application instance.
@@ -138,6 +143,7 @@ def create_app(
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['SESSION_FILE_DIR'] = '/app/flask_session'
     app.config['GLOBAL_CONFIG'] = config
+    app.config['SYSTEM_LOG'] = system_log
     Session(app)
 
     return app
@@ -150,7 +156,24 @@ with open('config.yaml', 'r') as f:
 # Set up the application
 global_config = fetch_global_config()
 logging_setup(global_config)
-app = create_app(config=global_config)
+
+# Initialize the SystemLog with default values
+#   Values can be overridden when sending a log
+system_log = SystemLog(
+    logging_url=LOG_URL,
+    source="cloudflare-plugin",
+    destination=["web"],
+    group="plugin",
+    category="cloudflare",
+    alert="system",
+    severity="info",
+    teams_chat_id=config_data.get('chat-id', None)
+)
+
+app = create_app(
+    config=global_config,
+    system_log=system_log
+)
 
 
 @app.route(

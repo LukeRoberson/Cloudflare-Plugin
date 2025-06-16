@@ -6,14 +6,25 @@ Handle webhook events from Cloudflare and process them accordingly.
 
 import requests
 import logging
+import yaml
+from flask import current_app
 
 
 PLUGINS_URL = "http://web-interface:5100/api/plugins"
 
 
+# Get event handling configuration from the YAML file
+with open("events.yaml", "r") as file:
+    EVENTS = yaml.safe_load(file)
+
+
 class EventHandler:
     """
     EventHandler class to handle webhook events from Cloudflare.
+
+    _common_fields: Extracts common fields from the event data.
+    _data_fields: Extracts specific fields from the event data based
+        on the alert type.
 
     Args:
         config (dict): Configuration dictionary containing necessary settings.
@@ -122,32 +133,33 @@ class EventHandler:
 
     def _common_fields(
         self,
+        event: dict,
     ) -> bool:
         """
         Extract common fields from the event data and store them.
             These fields are available in all webhook events.
 
         Args:
-            None
+            event (dict): The event data received from Cloudflare.
 
         Returns:
             bool: True if all required fields are present, False otherwise.
         """
 
         # The name of the webhook, as defined in the Cloudflare dashboard
-        self.webhook_name = self.config.get('name', None)
+        self.webhook_name = self.event.get('name', None)
 
         # The notification policy name, as defined in the Cloudflare dashboard
-        self.policy_name = self.config.get('policy_name', None)
+        self.policy_name = self.event.get('policy_name', None)
 
         # A large string, made up of the event data (can get from other fields)
-        self.text = self.config.get('text', None)
+        self.text = self.event.get('text', None)
 
         # The timestamp of the event in epoch format
-        self.ts = self.config.get('ts', None)
+        self.ts = self.event.get('ts', None)
 
         # The name of the item that triggered the alert (eg, 'incident_alert')
-        self.alert_type = self.config.get('alert_type', None)
+        self.alert_type = self.event.get('alert_type', None)
 
         # Check that all required fields are present
         required_fields = [
@@ -186,6 +198,9 @@ class EventHandler:
             )
             self.id = self.event.get('data', {}).get(
                 'id', None
+            )
+            self.incident_name = self.event.get('data', {}).get(
+                'incident_name', None
             )
             self.incident_created_at = self.event.get('data', {}).get(
                 'incident_created_at', None
@@ -459,18 +474,18 @@ class EventHandler:
             )
 
         elif self.alert_type == "dedicated_ssl_certificate_event_type":
-            self.data = self.event.get(
+            self.data = self.event.get('data', {}).get(
                 'data', None
             )
-            self.metadata = self.event.get(
+            self.metadata = self.event.get('data', {}).get(
                 'metadata', None
             )
 
         elif self.alert_type == "universal_ssl_event_type":
-            self.data = self.event.get(
+            self.data = self.event.get('data', {}).get(
                 'data', None
             )
-            self.metadata = self.event.get(
+            self.metadata = self.event.get('data', {}).get(
                 'metadata', None
             )
 
@@ -539,7 +554,7 @@ class EventHandler:
 
     def _parse_body(
         self,
-    ) -> None:
+    ) -> dict:
         """
         Work through the fields in the request body and build a message to
             send to the logging service.
@@ -548,28 +563,43 @@ class EventHandler:
             None
 
         Returns:
-            None
+            dict: A dictionary containing the log message and Teams message.
         """
 
-        if self.alert_type == "health_check_status_notification":
-            if self.status == "Healthy":
-                message = f"CloudFlare says that {self.name} is healthy again!"
+        message = ""
 
-            else:
-                message = (
-                    f"CloudFlare has detected an event with {self.name}:\n"
-                    f"Reason: {self.reason}, status: {self.status}, "
-                )
+        # Get the handler for the alert type
+        handler = EVENTS.get(self.alert_type, None)
+        if handler is None:
+            logging.error(
+                f"Unhandled alert type: {self.alert_type}. "
+                "Cannot process event."
+            )
+            message = f"Unhandled CloudFlare event: {self.event}:\n"
 
         else:
-            message = f"Unhandled CloudFlare event: {self.event}:\n"
+            try:
+                # Get the formatted message
+                message = handler.get(
+                    "message",
+                    self.event
+                ).format(self=self)
+
+                # If there is a Teams message (optional), get it too
+                self.teams_msg = handler.get("teams", None)
+                if self.teams_msg:
+                    self.teams_msg = self.teams_msg.format(self=self)
+
+            except Exception as e:
+                logging.error(
+                    f"Error formatting event message for {self.event}:\n{e}"
+                )
+                message = "No message included"
+                self.teams_msg = str(self.event)
+                self.severity = "warning"
 
         log = {
             "source": "CloudFlare",
-            "destination": [
-                "web",
-                "teams",
-            ],
             "log": {
                 "group": self.name,
                 "category": self.alert_type,
@@ -584,7 +614,7 @@ class EventHandler:
             }
         }
 
-        print(log)
+        return log
 
     def process_event(
         self,
@@ -613,7 +643,7 @@ class EventHandler:
         self.event = event
 
         # Extract common fields
-        result = self._common_fields()
+        result = self._common_fields(event)
         if result is False:
             logging.error(
                 """
@@ -622,6 +652,9 @@ class EventHandler:
                 """
             )
             return
+
+        # Extract specific data fields based on the alert type
+        result = self._data_fields()
 
         # The name of the item that triggered the alert (eg, a failed service)
         self.name = event.get('data', {}).get('name', None)
@@ -636,4 +669,33 @@ class EventHandler:
         self.status = event.get('data', {}).get('status', None)
 
         # Parse the body and build a message to send to the logging service
-        self._parse_body()
+        log = self._parse_body()
+
+        # Get the actions to perform
+        if self.alert_type in self.config:
+            actions = self.config[self.alert_type]
+        else:
+            actions = self.config["default"]
+
+        # Convert this to a list of actions
+        action_list = []
+        action_list = [
+            k for k in ("web", "teams", "syslog", "sql") if actions.get(k)
+        ]
+        log["destination"] = action_list
+
+        # If no actions are specified, do nothing
+        if not action_list:
+            return
+
+        # Log to logging service
+        system_log = current_app.config['SYSTEM_LOG']
+        system_log.log(
+            message=log['log']['message'],
+            destination=log['destination'],
+            group=log['log']['group'],
+            category=log['log']['category'],
+            alert=log['log']['alert'],
+            severity=log['log']['severity'],
+            teams_msg=log['teams']['message'],
+        )

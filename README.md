@@ -14,7 +14,7 @@ While this is plain-text in the HTTP header, it is encrypted by TLS when it is s
 
 The message body follows this schema:
 
-```
+```json
 {
     "name": "Webhook Name",
     "text": "A big text string built on the other fields in the webhook",
@@ -38,7 +38,7 @@ Each alert type will have different sub-fields in the **data** field. **severity
 
 Additional headers are included:
 
-```
+```json
 {
     "Host": "cloudflare:5000",
     "User-Agent": "Go-http-client/2.0",
@@ -221,7 +221,7 @@ The additional data fields for each of these events is listed below.
 ```
 
 
-***load_balancing_pool_enablement_alert***
+**load_balancing_pool_enablement_alert**
 ```
 "data": {
     "alert_name": "Pool Enablement",

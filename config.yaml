@@ -2,3 +2,98 @@ name: "CloudFlare"
 
 chat-id: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
+incident_alert:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+maintenance_event_notification:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+closed_port_scan_alert:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+open_port_scan_alert:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+dos_attack_l7:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+health_check_status_notification:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+load_balancing_health_alert:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+load_balancing_pool_enablement_alert:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+radar_notification:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+bgp_hijack_notification:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+dedicated_ssl_certificate_event_type:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+universal_ssl_event_type:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+security_insights_alert:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+real_origin_monitoring:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+clickhouse_alert_fw_anomaly:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+
+default:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
