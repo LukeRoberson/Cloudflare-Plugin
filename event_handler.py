@@ -2,8 +2,21 @@
 Module: event_handler.py
 
 Handle webhook events from Cloudflare and process them accordingly.
+
+Classes:
+    EventHandler: Class to handle webhook events from Cloudflare.
+        It validates the webhook, extracts common and specific fields,
+        and processes the event to send logs to the logging service.
+
+Dependencies:
+    requests: For making HTTP requests to the logging service and
+        fetching plugin configuration.
+    logging: For logging errors and debug messages.
+    yaml: For loading event handling configuration from a YAML file.
+    flask: For accessing the current application context.
 """
 
+# Standard library imports
 import requests
 import logging
 import yaml

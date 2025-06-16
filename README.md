@@ -1,8 +1,84 @@
 # CloudFlare Plugin
 
-## Webhooks
+A plugin to manage alerts (webhooks) from the Cloudflare platform.
+</br></br>
 
-### Secrets
+# Project Organization
+## Python Files
+
+| File             | Provided Function                                             |
+| ---------------- | ------------------------------------------------------------- |
+| main.py          | Entry point to the plugin, load configuration, set up routes  |
+| systemlog.py     | Handles sending alerts to the logging service                 |
+| event_handler.py | Parses an event and builds fields for logging/alerting        |
+</br></br>
+
+
+## YAML Files
+
+| File        | Provided Function                           |
+| ----------- | ------------------------------------------- |
+| config.yaml | Configuration for the plugin                |
+| events.yaml | Rules to create and forma alerts from event |
+</br></br>
+
+
+# Configuration
+
+## Plugin Configuration
+
+Configuration is handled in config.yaml. The two mandatory sections are:
+
+```yaml
+name: "CloudFlare"
+chat-id: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+This defines the name of the plugin, and the Teams Chat ID that alerts are sent to.
+
+There are a series of alert types, with actions assigned. This is the action to take, such as sending to Teams, logging to live alerts, etc, when that particular event is received.
+
+```yaml
+alert_type:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+```
+
+A default set of actions is defined, in case an unknown alert is received:
+
+```yaml
+default:
+    web: true
+    sql: false
+    syslog: false
+    teams: true
+```
+</br></br>
+
+
+## Event Rules
+
+Event rules are used for formatting logs and messages. When an event is received, it is parsed (fields are extracted), and rules are applied to create the log entries and messages.
+
+These rules are stored in events.yaml. There is a rule for each known event type. For example:
+
+```yaml
+incident_alert:
+  description: "Cloudflare Status: Incident Alert. Cloudflare is experiencing an incident."
+  message: "Cloudflare is experiencing an incident: {self.incident_name}\n{self.message}"
+```
+
+This is an event type called **incident_alert**. The description is for documentation only, and does not affect the plugin.
+
+The **message** is the formatted output that goes to logs and optionally Teams.
+
+Optionally a **teams** field may be present. This is for a customised Teams message. If this field is not present, the **message** field is used when sending to Teams.
+
+
+# Webhooks
+## Secrets
 
 If a CloudFlare webhook is configured with a secret, it will be sent in plain-text in the **Cf-Webhook-Auth**.
 
@@ -10,7 +86,7 @@ While this is plain-text in the HTTP header, it is encrypted by TLS when it is s
 </br></br>
 
 
-### Message Body Schema
+## Message Body Schema
 
 The message body follows this schema:
 
@@ -34,7 +110,7 @@ Each alert type will have different sub-fields in the **data** field. **severity
 </br></br>
 
 
-### Message Headers
+## Message Headers
 
 Additional headers are included:
 
@@ -61,13 +137,13 @@ Additional headers are included:
 </br></br>
 
 
-### Message Parameters
+## Message Parameters
 
 There are no additional parameters included in the webhook.
 </br></br>
 
 
-### Notification Types
+## Notification Types
 
 These notifications are configured on the CloudFlare portal under 'notifications'.
 
@@ -95,7 +171,7 @@ The additional data fields for each of these events is listed below.
 
 
 **Incident Alert**
-```
+```json
 "data": {
     "affected_components": [
         {
@@ -117,7 +193,7 @@ The additional data fields for each of these events is listed below.
 
 
 **maintenance_event_notification**
-```
+```json
 "data": {
     "airport_code": "LHR",
     "event_type": "MAINTENANCE_EVENT_TYPE_CHANGED",
@@ -129,7 +205,7 @@ The additional data fields for each of these events is listed below.
 
 
 **closed_port_scan_alert**
-```
+```json
 "data": {
     "account_name": "account-name",
     "account_tag": "aBcD1234efgh567i890j1kl234567m89",
@@ -146,7 +222,7 @@ The additional data fields for each of these events is listed below.
 
 
 **open_port_scan_alert**
-```
+```json
 "data": {
     "account_name": "account-name",
     "account_tag": "aBcD1234efgh567i890j1kl234567m89",
@@ -163,7 +239,7 @@ The additional data fields for each of these events is listed below.
 
 
 **dos_attack_l7**
-```
+```json
 "data": {
     "account_name": "account-name",
     "account_tag": "aBcD1234efgh567i890j1kl234567m89",
@@ -189,7 +265,7 @@ The additional data fields for each of these events is listed below.
 
 
 **health_check_status_notification**
-```
+```json
 "data": {
     "actual_code": 404,
     "expected_codes": "[2xx 302]",
@@ -205,7 +281,7 @@ The additional data fields for each of these events is listed below.
 
 
 **load_balancing_health_alert**
-```
+```json
 "data": {
     "alert_name": "load_balancing_health_alert",
     "event_source": "origin",
@@ -222,7 +298,7 @@ The additional data fields for each of these events is listed below.
 
 
 **load_balancing_pool_enablement_alert**
-```
+```json
 "data": {
     "alert_name": "Pool Enablement",
     "auth_info": {
@@ -239,7 +315,7 @@ The additional data fields for each of these events is listed below.
 
 
 **radar_notification**
-```
+```json
 "data": {
     "affected_asns": [
         "174",
@@ -279,7 +355,7 @@ The additional data fields for each of these events is listed below.
 
 
 **bgp_hijack_notification**
-```
+```json
 "data": {
     "ASNs_seen": [
         "100",
@@ -301,7 +377,7 @@ The additional data fields for each of these events is listed below.
 
 
 **dedicated_ssl_certificate_event_type**
-```
+```json
 "data": {
     "data": {
         "custom_csr_id": "",
@@ -349,7 +425,7 @@ The additional data fields for each of these events is listed below.
 
 
 **universal_ssl_event_type**
-```
+```json
 "data": {
     "data": {
         "custom_csr_id": "",
@@ -396,19 +472,19 @@ The additional data fields for each of these events is listed below.
 
 
 **security_insights_alert**
-```
+```json
 'data': {
-    'account_name': 'account-name',
-    'account_tag': 'aBcD1234efgh567i890j1kl234567m89',
-    'insight_class': 'Insight Class',
-    'subject': 'Subject',
-    'timestamp': '2025-06-13T06:13:37.721192654Z'
+    "account_name": "account-name",
+    "account_tag": "aBcD1234efgh567i890j1kl234567m89",
+    "insight_class": "Insight Class",
+    "subject": "Subject",
+    "timestamp": "2025-06-13T06:13:37.721192654Z"
 }, 
 ```
 
 
 **real_origin_monitoring**
-```
+```json
 "data": {
     "account_tag": "aBcD1234efgh567i890j1kl234567m89",
     "unreachable_zones": [
@@ -422,7 +498,7 @@ The additional data fields for each of these events is listed below.
 
 
 **clickhouse_alert_fw_anomaly**
-```
+```json
 "data": {
     "account_name": "account-name",
     "actions": "undefined",
