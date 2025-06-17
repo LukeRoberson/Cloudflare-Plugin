@@ -10,7 +10,7 @@ LABEL org.opencontainers.image.version="1.0.0"
 
 # Custom Labels for the image
 LABEL net.networkdirection.healthz="http://localhost:5100/api/health"
-LABEL net.networkdirection.plugin.name="Mist"
+LABEL net.networkdirection.plugin.name="CloudFlare"
 
 # Copy the requirements file and install dependencies
 COPY requirements.txt .

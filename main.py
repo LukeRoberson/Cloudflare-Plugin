@@ -1,8 +1,8 @@
 """
 Module: main.py
 
-The Cloud Flare plugin
-    Receives and processes webhooks from the ClourFlare.
+The CloudFlare plugin
+    Receives and processes webhooks from the CloudFlare platform.
 
 Usage:
     This is a Flask application that should run behind a WSGI server inside
