@@ -1,6 +1,8 @@
 name: "CloudFlare"
 
-chat-id: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+chats:
+    user: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    default: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 incident_alert:
     web: true

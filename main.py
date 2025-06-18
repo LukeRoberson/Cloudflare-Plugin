@@ -124,6 +124,7 @@ def logging_setup(
 def create_app(
     config: dict,
     system_log: SystemLog,
+    plugin_config: dict,
 ) -> Flask:
     """
     Create the Flask application instance and set up the configuration.
@@ -144,6 +145,7 @@ def create_app(
     app.config['SESSION_FILE_DIR'] = '/app/flask_session'
     app.config['GLOBAL_CONFIG'] = config
     app.config['SYSTEM_LOG'] = system_log
+    app.config['PLUGIN_CONFIG'] = plugin_config
     Session(app)
 
     return app
@@ -167,12 +169,13 @@ system_log = SystemLog(
     category="cloudflare",
     alert="system",
     severity="info",
-    teams_chat_id=config_data.get('chat-id', None)
+    teams_chat_id=config_data.get('chats', None).get('default', None)
 )
 
 app = create_app(
     config=global_config,
-    system_log=system_log
+    system_log=system_log,
+    plugin_config=config_data,
 )
 
 
