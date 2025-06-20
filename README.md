@@ -9,7 +9,6 @@ A plugin to manage alerts (webhooks) from the Cloudflare platform.
 | File             | Provided Function                                             |
 | ---------------- | ------------------------------------------------------------- |
 | main.py          | Entry point to the plugin, load configuration, set up routes  |
-| systemlog.py     | Handles sending alerts to the logging service                 |
 | event_handler.py | Parses an event and builds fields for logging/alerting        |
 </br></br>
 
