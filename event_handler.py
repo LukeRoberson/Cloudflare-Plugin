@@ -23,7 +23,7 @@ import yaml
 from flask import current_app
 
 
-PLUGINS_URL = "http://web-interface:5100/api/plugins"
+PLUGINS_URL = "http://core:5100/api/plugins"
 
 
 # Get event handling configuration from the YAML file
