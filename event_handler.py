@@ -59,6 +59,7 @@ class EventHandler:
         """
 
         self.config = config
+        self.default_chat = config.get('chats', {}).get('default', None)
 
     def __enter__(
         self
@@ -622,7 +623,7 @@ class EventHandler:
                 "message": message,
             },
             "teams": {
-                "destination": self.config['chat-id'],
+                "destination": self.default_chat,
                 "message": message,
             }
         }
