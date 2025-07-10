@@ -1,0 +1,9 @@
+[tool.project-metadata]
+name = "Cloudflare Plugin"
+description = "A plugin for the AI assistant app, enhancing it with Cloudflare capabilities."
+version = "1.0.2"
+
+[tool.versioning]
+major = 1
+minor = 0
+patch = 2
