@@ -48,11 +48,11 @@ bgp_hijack_notification:
 
 dedicated_ssl_certificate_event_type:
   description: "SSL/TLS: Advanced Certificate Alert. Dedicated Certificate validation status, issuance, renewal, and expiration notices"
-  message: "Cloudflare certificate issue: {self.data}"
+  message: "Cloudflare certificate event. Type: {self.type}, method: {self.method}, records: {self.validation_records}"
 
 universal_ssl_event_type:
   description: "SSL/TLS: Universal SSL Alert. Universal Certificate validation status, issuance, renewal, and expiration notices"
-  message: "Cloudflare certificate issue: {self.data}"
+  message: "Cloudflare certificate event. Type: {self.type}, method: {self.method}, records: {self.validation_records}"
 
 security_insights_alert:
   description: "Security Insights: New Insight Detected. A new Insight for your choice of insight_class was detected."
